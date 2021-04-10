@@ -41,7 +41,6 @@ class GameDownloader:
     def games_to_file(self, fname):
         # Stores all games into one long text file, split by two blank lines
         with open(fname, 'w') as f: 
-            #for game in self.games:
             for k, games in self.games.items():
                 for game in games:
                     f.write(game + '\n\n\n')
