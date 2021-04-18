@@ -26,7 +26,7 @@ class GameDownloader:
     
     def get_games(self, limit = None, specify_dates = None):
         # For a year/month: https://api.chess.com/pub/player/{user}/games/2009/10/pgn
-        # Games are separated by blank lines
+        # (games are separated by blank lines)
         pgns = {}
         dates = specify_dates if specify_dates else self.dates[:limit]
         for year, month in dates:
@@ -51,13 +51,13 @@ class GameDownloader:
 
         # Make base folder
         foldername = foldername if foldername else self.username
-        full_path = f"../data/user_games/{foldername}"
+        full_path = f"data/user_games/{foldername}"
         Path(full_path).mkdir(parents=True, exist_ok=True)
         print(f"Writing to {full_path}")
 
         for d in self.dates:
             # Make .../year/month subdirectory
-            subdirectory_path = f"../data/user_games/{foldername}/{d[0]}/{d[1]}/"
+            subdirectory_path = f"data/user_games/{foldername}/{d[0]}/{d[1]}/"
             Path(subdirectory_path).mkdir(parents=True, exist_ok=True)
             for i, g in enumerate(self.games[tuple(d)]):
                 gamename = f"{subdirectory_path}game_{i}.txt"
