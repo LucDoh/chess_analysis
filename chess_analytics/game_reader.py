@@ -9,16 +9,17 @@ class GameReader:
     '''Read games from pgn files.'''
     def __init__(self, fgame):
         self.fgame = fgame
-        self.headers, self.game = self.get_game()
+        self.headers, self.game = self.read_game()
         self.winner = self.get_winner()
         self.board = None
         self.date = self.infer_date()
         self.eco_code = self.headers['ECO'] if 'ECO' in self.headers else "NaO"
         self.df_eco = self.load_eco_table()
-        self.opening = self.eco_to_opening()
+        self.df_nic = self.load_nic_table()
+        self.opening = self.eco_to_nic_opening()
         self.time_control = self.headers['TimeControl'] if 'TimeControl' in self.headers else "NT"
 
-    def get_game(self):
+    def read_game(self):
         with open(self.fgame) as pgn_file:
             game = chess.pgn.read_game(pgn_file)
         return game.headers, game
@@ -28,7 +29,7 @@ class GameReader:
         result = self.headers['Result'].split("-")[0]
         if len(result) == 1:
             return int(result)
-        else: # it's a draw
+        else:
             return float("0.5")
 
     def infer_date(self):
@@ -39,11 +40,16 @@ class GameReader:
 
     def load_eco_table(self):
         '''Load the Encyclopedia of Chess Openings into a dataframe (2700+ openings).'''
-        df_eco = pd.read_csv("data/eco.txt", sep='\t', names = ["Name", "Moves", "nq"])
+        df_eco = pd.read_csv("data/ECO.txt", sep='\t', names = ["Name", "Moves", "nq"])
         df_eco = df_eco.reset_index().drop(columns=['nq']).iloc[:-2]
         df_eco.columns = ['ECO', 'Name', 'Moves']
         df_eco['ECO'] = df_eco['ECO'].apply(lambda x: x.rstrip())
         return df_eco
+
+    def load_nic_table(self):
+        '''Load the New in Chess key (35 ECOs --> Names).'''
+        return pd.read_csv("data/NIC_Key.txt", sep='\t')
+
 
     def eco_to_opening(self):
         '''Using the eco table and the game's ECO code, find the opening name.
@@ -54,6 +60,26 @@ class GameReader:
         else:
             # The name of the main line
             return self.df_eco[self.df_eco['ECO'] == self.eco_code].iloc[0]['Name']
+
+    def eco_to_nic_opening(self):
+        '''Use NIC table for opening name.'''
+        if self.eco_code == 'NaO': # Not an opening
+            return self.eco_code
+
+        # Direct match
+        match = self.df_nic.Name[self.df_nic['Codes'] == self.eco_code]
+        if match.size > 0:
+            return match.values[0]
+        else:
+            # Get from code_range
+            letter, code_int = self.eco_code[0], int(self.eco_code[1:])
+            for i, code_range in enumerate(self.df_nic.Code_ranges.values):
+                if (letter == code_range[0]) and (code_int >= code_range[1]) and (code_int <= code_range[2]):
+                    return self.df_nic.Name.iloc[i].rstrip()
+            
+            # If missing, fall back on data/ECO.txt
+            # (e.g the Philidor Defense)
+            return self.eco_to_opening() + "*"
 
     def print_game(self, verbose=False):
         '''Print full PGN text or a summary of it.'''
@@ -85,8 +111,7 @@ class GameReader:
 
     def describe(self):
         '''Return an array describing the game.
-        [W_player, B_player, result, ECO, opening, time control, loss type]'''
-        # Add self.headers?
+        [W_player, B_player, result, ECO, opening, time control, loss type, ...]'''
         return [self.headers['White'], self.headers['Black'], self.winner,
                 self.headers['WhiteElo'], self.headers['BlackElo'], self.eco_code,
                 self.opening, self.date, self.time_control, self.fgame]

@@ -15,11 +15,11 @@ class GameLibrary:
         '''From the parent_dir, loads pgns and their summaries into a dataframe.'''
         library = [] # pd.DataFrame()
         library_files = list(Path(self.parent_dir).rglob("*.[tT][xX][tT]"))
+        print(f"Loading library ({len(library_files)} files)...") 
         for i, fname in enumerate(library_files[:limit]):
-            print(f"{i}.", end='') 
             game = GameReader(str(fname))
             library.append(game.describe())
-
+        print("...loaded.\n")
         library_df = pd.DataFrame(library, columns = ['White', 'Black', 'Result', 'WElo', 'BElo',
                                                         'ECO', 'Opening', 'Date', 'Time', 'fname'])
         return library_df
