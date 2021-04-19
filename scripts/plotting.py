@@ -32,9 +32,10 @@ if __name__=="__main__":
     opp_ratings_as_black.index = opp_ratings_as_black.index.astype(int)
 
     # Plot the range of opponents ratings
-    fig, ax = plt.subplots(2,1, figsize = (6,8))
+    fig, ax = plt.subplots(1,2, figsize = (12,8), sharey=True)
     opp_ratings_as_white.sort_index().plot.bar(ax=ax[0], label='Opponent rating (black)', color='r', alpha=0.8)
     opp_ratings_as_black.sort_index().plot.bar(ax=ax[0], label='Opponent rating (white)', color='b', alpha=0.5)
+    
     ax[0].set_ylabel("Number of games")
     ax[0].tick_params(axis='x', labelrotation=60)
     ax[0].legend()
@@ -50,5 +51,8 @@ if __name__=="__main__":
     df.Processed_Opening.value_counts().nlargest(10).plot.bar(ax=ax[1])
     ax[1].set_ylabel("Number of games")
     ax[1].tick_params(axis='x', labelrotation=35)
+    ax[1].xaxis.get_label().set_fontsize(30)
+    #plt.rcParams.update({'font.size': 30})    
+
     plt.show()
 
