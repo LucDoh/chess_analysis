@@ -1,5 +1,6 @@
 import sys
 import json
+from functools import lru_cache
 import pandas as pd
 import chess.pgn
 import chess.polyglot
@@ -19,46 +20,35 @@ class GameReader:
         self.opening = self.eco_to_nic_opening()
         self.time_control = self.headers['TimeControl'] if 'TimeControl' in self.headers else "NT"
 
-    def read_game(self):
-        with open(self.fgame) as pgn_file:
-            game = chess.pgn.read_game(pgn_file)
-        return game.headers, game
-
-    def get_winner(self):
-        '''Single-number representation of winner 1 => white, 0 => black, 0.5 => draw.'''
-        result = self.headers['Result'].split("-")[0]
-        if len(result) == 1:
-            return int(result)
-        else:
-            return float("0.5")
-
-    def infer_date(self):
-        if 'Date' in self.headers:
-            return self.headers['Date']  
-        else:
-            return self.headers['EventDate']
-
-    def load_eco_table(self):
-        '''Load the Encyclopedia of Chess Openings into a dataframe (2700+ openings).'''
+    @classmethod
+    @lru_cache(maxsize=None)
+    def load_eco_table(cls):
+        '''Load Encyclopedia of Chess Openings into dataframe (2700+ openings).'''
         df_eco = pd.read_csv("data/ECO.txt", sep='\t', names = ["Name", "Moves", "nq"])
         df_eco = df_eco.reset_index().drop(columns=['nq']).iloc[:-2]
         df_eco.columns = ['ECO', 'Name', 'Moves']
         df_eco['ECO'] = df_eco['ECO'].apply(lambda x: x.rstrip())
         return df_eco
 
+    @classmethod
+    @lru_cache(maxsize=None)
     def load_nic_table(self):
-        '''Load the New in Chess key (35 ECOs --> Names).'''
+        '''Load New in Chess key (35 ECOs --> Names).'''
         return pd.read_csv("data/NIC_Key.txt", sep='\t')
+
+    def read_game(self):
+        with open(self.fgame) as pgn_file:
+            game = chess.pgn.read_game(pgn_file)
+        return game.headers, game
 
 
     def eco_to_opening(self):
-        '''Using the eco table and the game's ECO code, find the opening name.
+        '''Using the eco table + game's ECO code, find the opening name.
         Issue: this assumes the first row is the main line, but that's not the case.'''
         if self.eco_code == 'NaO':
-            # Not an opening
             return self.eco_code
         else:
-            # The name of the main line
+            # Lookup main line name
             return self.df_eco[self.df_eco['ECO'] == self.eco_code].iloc[0]['Name']
 
     def eco_to_nic_opening(self):
@@ -81,11 +71,25 @@ class GameReader:
             # (e.g the Philidor Defense)
             return self.eco_to_opening() + "*"
 
+    def get_winner(self):
+        '''Single-number representation of winner 1 => white, 0 => black, 0.5 => draw.'''
+        result = self.headers['Result'].split("-")[0]
+        if len(result) == 1:
+            return int(result)
+        else:
+            return float("0.5")
+
+    def infer_date(self):
+        if 'Date' in self.headers:
+            return self.headers['Date']  
+        else:
+            return self.headers['EventDate']
+
     def print_game(self, verbose=False):
         '''Print full PGN text or a summary of it.'''
         if verbose:
-            print(self.headers)
             print("Full game:")
+            print(self.headers)
             print(self.game)
         else:
             print("Summary:")
@@ -98,8 +102,6 @@ class GameReader:
         # PlyCount not available on chess.com
         ply = int(self.headers['PlyCount']) if 'PlyCount' in self.headers else None
         n_moves = int(ply/2) if ply is not None else None
-        # chess.com puts date in EndDate
-        #date = self.headers['EventDate'] if 'EventDate' in self.headers else self.headers['Date']
         eco = self.headers['ECO'] if 'ECO' in self.headers else "Not An Opening"
         if result == "Draw":
             print(f"Draw between {self.headers['White']} and {self.headers['Black']} in {n_moves} moves ({ply} ply).")
