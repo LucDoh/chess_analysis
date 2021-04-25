@@ -1,18 +1,18 @@
 # chess_analytics
 ### What for?
-This project aims to provide high-level analysis of large amounts of chess games, starting with a simple way to download an organized collection of all your chess.com games!
+This project aims to give a high-level analysis of large amounts of chess games, starting with a simple way to download an organized collection of all your Chess.com games! 
 
-On chess.com, players can view simple statistics about their games, like win-rate by color and best win. They can also analyze a couple games per day for free. This tool tries to fill between those two extremes, by giving you deeper and more specific statistics across games. 
+On Chess.com, players can view simple statistics about their games, like win-rate by color and best win. We can also analyze a couple games per day for free. This tool tries to look between those two extremes, by giving you more specific statistics across games. 
 
 Examples: 
-- breakdown of your wins by opening
+- winrate by opening
 - loss-type frequencies (checkmate, resignation, out of time)
 - nice visualizations, e.g. a heatmap of the user's chess position by move 
-- grandmasters that your repertoire is most similiar to, so you can study them
+- grandmasters who have a similar repertoire, so you can study them
 
 ### Components
 
-1. **notebooks/intro_to_python-chess.ipynb** -  how to use python-chess with any PGN (game) and interface with polyglot opening books.
+1. **notebooks/intro_to_python-chess.ipynb** -  working with python-chess on any PGN (game) and interfacing with polyglot opening books.
 
 2. **scripts/pgn_downloader.py** - a script to download all chess.com games for a user, organized in year/month directories.
     ```
@@ -24,7 +24,7 @@ Examples:
 4. **chess_analytics/game_library.py** - create a library of games from a directory, represented as a dataframe with a row per game.
     ```
     from chess_analytics.game_library import GameLibrary
-    library = GameLibrary("data/user_games/username/")
+    library = GameLibrary("data/user_games/user/")
     print(len(library.df))
     ```
     ```
@@ -35,12 +35,13 @@ Examples:
     ```
     ![image_name](data/examples/df_sampled.png)
 
-5. **scripts/plotting.py** - visualize a library, show ratings of opponents and openings played.
+5. **scripts/plotting.py** - visualize a library of games, showing ratings of opponents and openings played.
 
     
 ### Sources
 
 - [python-chess](https://python-chess.readthedocs.io/en/latest/#)
-- [Opera Game PGN](https://www.chessgames.com/pgn/morphy_duke_karl_count_isouard_1858.pgn?gid=1233404) (Paul Morphy vs. Duke of Brunswick and Count Isouard, 1958)
+- [Chess.com API](https://www.chess.com/club/chess-com-developer-community)
+- [Opera Game PGN](https://www.chessgames.com/perl/chessgame?gid=1233404) (Paul Morphy vs. Duke of Brunswick and Count Isouard, 1958)
 - [Polyglot opening book](https://github.com/niklasf/python-chess/raw/master/data/polyglot/performance.bin)
 - [Encyclopedia of Chess Openings](https://github.com/seberg/icsbot/blob/master/misc/eco.txt)
