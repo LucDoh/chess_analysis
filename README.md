@@ -2,12 +2,12 @@
 ### What for?
 This project aims to give a high-level analysis of large amounts of chess games, starting with a simple way to download an organized collection of all your Chess.com games! 
 
-On Chess.com, players can view simple statistics about their games, like win-rate by color and best win. We can also analyze a couple games per day for free. This tool tries to look between those two extremes, by giving you more specific statistics across games. 
+On Chess.com, players can view simple statistics about their games, like win-rate by color and best win. They can also analyze a couple games per day for free. This package aims to go a bit further, without requiring much work from the player.
 
 Examples: 
 - winrate by opening
 - loss-type frequencies (checkmate, resignation, out of time)
-- nice visualizations, e.g. a heatmap of the user's chess position by move 
+- visualizations, e.g. a heatmap of the user's chess position by move 
 - grandmasters who have a similar repertoire, so you can study them
 
 ### Components
@@ -33,11 +33,14 @@ Examples:
     ```
     library.df.head()
     ```
-    ![image_name](data/examples/df_sampled.png)
+    ![Sample of dataframe](data/examples/df_sampled.png)
 
-5. **scripts/plotting.py** - visualize a library of games, showing ratings of opponents and openings played.
+5. **scripts/plotting.py** - visualize a library of games - opponent rating distribution, most common openings
+<p align="center">
+    <img src="data/examples/Rating_distribution.png" width="350"/>
+    <img src="data/examples/Most_played_white.png" width="350"/>
+</p>
 
-    
 ### Sources
 
 - [python-chess](https://python-chess.readthedocs.io/en/latest/#)

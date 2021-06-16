@@ -38,6 +38,9 @@ class GameReader:
         """Load New in Chess key (35 ECOs --> Names)."""
         return pd.read_csv("data/NIC_Key.txt", sep='\t')
 
+    def __str__(self):
+        return self.pgn
+
     def read_game(self):
         """Returns headers, python-chess' game object, and the PGN string. """
         with open(self.fgame) as pgn_file:
@@ -45,6 +48,7 @@ class GameReader:
         return game.headers, game
 
 
+    # Openings
     def eco_to_opening(self):
         """Using the eco table + game's ECO code, find the opening name.
         Issue: this assumes the first row is the main line, but that's not the case."""
@@ -74,7 +78,6 @@ class GameReader:
             # (e.g the Philidor Defense)
             return self.eco_to_opening() + "*"
     
-
     def clean_pgn(self):
         """ Scrubs comments/side-lines and redundant move-numbers from PGN. """
         clean_pgn = ""
