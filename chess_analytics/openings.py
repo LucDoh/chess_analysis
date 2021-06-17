@@ -37,3 +37,13 @@ def combine_like_openings(openings):
 
     openings = sorted(openings.items(), key=lambda x: -x[1])
     return openings
+
+
+
+def process_opening(x):
+    """Processing openings derived from ECO."""
+    if '*' in x:
+        x = ";".join(x[:-2].split(";"))
+        return x if len(x) == 1 else x
+    else:
+        return x

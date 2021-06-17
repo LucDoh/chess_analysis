@@ -1,44 +1,29 @@
-import matplotlib.pyplot as plt
 import sys 
 sys.path.append(".")
+import matplotlib.pyplot as plt
+import pandas as pd
 from chess_analytics.game_library import GameLibrary
 
 
-def process_opening(x):
-    # Keep only descriptive part of name
-    if '*' in x:
-        x = ";".join(x[:-2].split(";"))
-        return x if len(x) == 1 else x
-    else:
-        return x
+def plot_results_by_opening(library, color='White', num = 8):
+    """ Compute winrates by opening from a library. """
+    results_by_opening = library.results_by_openings(color)
+    df_results = pd.DataFrame(results_by_opening).T
+    df_results.index = ["-".join(i.split("-")[:3]) for i in df_results.index]
+    df_results.columns = ['Win', 'Loss', 'Draw']
+    
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.set_title(f"Results by opening ({color})")
+    ax = df_results.head(num).plot.barh(stacked=True, ax=ax, color=['g', 'crimson', 'grey'])
+    for i,lbl in enumerate(ax.patches):
+        j = i%num
+        total = df_results.iloc[j]['Win'] + df_results.iloc[j]['Loss'] + df_results.iloc[j]['Draw']
+        ax.annotate("{:.0f}%".format(lbl.get_width()*100/total), (lbl.get_x()+7, lbl.get_y()+.25),
+                    fontsize=9, color='black')
+    ax.invert_yaxis()
+    ax.legend(fontsize="13")
+    ax.set_xlabel("Number of games played")
 
-def plot_openings(library, percent=0.2):
-    """Plot most played openings."""
-    fig, ax = plt.subplots(2,1)
-
-    opening_freqs = library.opening_frequencies()
-    opening_freqs = library.opening_frequencies(color='White')
-    opening_freqs = opening_freqs[:int(percent*len(opening_freqs))]
-    ax[0].barh([" ".join(o[0].split('-')[:3]) for o in opening_freqs],
-           [o[1] for o in opening_freqs])
-    for tick in ax[0].get_xticklabels():
-        tick.set_rotation(45)
-    ax[0].invert_yaxis()
-    ax[0].set_title('Most played openings (White)')
-    ax[0].set_xlabel('Number of games played')
-
-    opening_freqs = library.opening_frequencies(color='Black')
-    opening_freqs = opening_freqs[:int(percent*len(opening_freqs))]
-    ax[1].barh([o[0] for o in opening_freqs],
-           [o[1] for o in opening_freqs])
-    for tick in ax[1].get_xticklabels():
-        tick.set_rotation(45)
-    ax[1].invert_yaxis()
-    ax[1].set_title('Most played openings (Black)')
-    ax[1].set_xlabel('Number of games played')
-    plt.rcParams.update({'font.size': 22})
-
-    plt.show()
 
 
 def plot_wrs(library):
@@ -81,14 +66,9 @@ if __name__=="__main__":
     # Make game library
     games_dir = sys.argv[1] # data/user_games/Luc777
     library = GameLibrary(games_dir)
-    df = library.df
 
-    # General win-rate plotting
-    plot_rating_distribution(df)
-
-    # Better openings plotting
-    plot_openings(library)
-
+    #plot_rating_distribution(library.df)
+    plot_results_by_opening(library)
     # Plot winrate by color
     plot_wrs(library)
     

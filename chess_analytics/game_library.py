@@ -27,6 +27,16 @@ class GameLibrary:
                                                         'ECO', 'Opening', 'Date', 'Time', 'id', 'fname'])
         return library_df
 
+
+    def winrates(self):
+        """ Winrates by color"""
+        white_df = self.df[self.df['White'] == self.username]
+        black_df = self.df[self.df['Black'] == self.username]
+        black_wr = len(black_df[black_df['Result']==0])/len(black_df)
+        white_wr = len(white_df[white_df['Result']==1])/len(white_df)
+        return white_wr, black_wr
+
+
     def extract_openings_from_ecourl(self, color=None):
         """Extract opening names found in ECOUrl header."""
         if color is not None:
@@ -37,23 +47,43 @@ class GameLibrary:
         openings = [eco_url.split('/')[-1] for eco_url in eco_urls]
         return openings
 
+
     def opening_frequencies(self, color=None):
         """Aggregates opening names from ECOURL, by string similarity, 
-        and sums for frequency of main lines."""
+        and sums their counts to get frequency of main lines."""
         openings = self.extract_openings_from_ecourl(color)
         return combine_like_openings(openings)
 
 
-    def winrates(self):
-        """ Winrates by color"""
-        white_df = self.df[self.df['White'] == self.username]
-        black_df = self.df[self.df['Black'] == self.username]
-        black_wr = len(black_df[black_df['Result']==0])/len(black_df)
-        white_wr = len(white_df[white_df['Result']==1])/len(white_df)
-        return white_wr, black_wr
-    
+    def openings_and_games(self, color = 'White'):
+        """Returns a list of specific openings and dataframe with rows (where color)."""
+        openings = self.extract_openings_from_ecourl(color=color)
+        return openings, self.df[self.df[color] == self.username]
+
+
+    def results_by_openings(self, color = 'White'):
+        """Returns a mapping between opening: (wins, losses, draws)."""
+        openings, games = self.openings_and_games(color)
+        # Top openings (white)
+        opening_freqs = self.opening_frequencies(color=color)
+
+        # Get results for top openings
+        opening_wrs = {}
+        for main_op in [x[0] for x in opening_freqs]:
+            mask = [main_op in op for op in openings]
+            games_op = games[mask]
+            if color=="White":   
+                opening_wrs[main_op] = (len(games_op[games_op.Result==1]), len(games_op[games_op.Result==0]),
+                                        len(games_op[games_op.Result==0.5]))
+            else:
+                opening_wrs[main_op] = (len(games_op[games_op.Result==0]), len(games_op[games_op.Result==1]),
+                                        len(games_op[games_op.Result==0.5]))
+                        
+        return opening_wrs
+
+
     # TODO
-    # Games by color
-    # Winrate
-    # Best time control
-    # Plot against time
+    # Longest common sequence of moves
+    # Most common ways of losing (time, resignation, mate)
+    # Cluster games by opening, or similarity
+    # Plot against time, allow filtering on dates

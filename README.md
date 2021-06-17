@@ -37,8 +37,8 @@ Examples:
 
 5. **scripts/plotting.py** - visualize a library of games - opponent rating distribution, most common openings
 <p align="center">
-    <img src="data/examples/Rating_distribution.png" width="350"/>
-    <img src="data/examples/Most_played_white.png" width="350"/>
+    <img src="data/examples/Rating_distribution.png" width="360"/>
+    <img src="data/examples/Winrate_by_opening_white.png" width="330"/>
 </p>
 
 ### Sources
