@@ -1,6 +1,6 @@
 import pandas as pd
 from .game_reader import GameReader
-from .openings import combine_like_openings
+from .openings import combine_like_openings, get_mainline
 from pathlib import Path
 
 
@@ -11,7 +11,8 @@ class GameLibrary:
         self.parent_dir = parent_dir
         self.username = parent_dir.split('/')[-1]
         self.df = self.load_library(limit)
-    
+        self.get_chcom_openings()
+
     def load_library(self, limit):
         """From the parent_dir, loads pgns and their summaries into a dataframe."""
         library = [] 
@@ -24,17 +25,31 @@ class GameLibrary:
         print("...loaded.\n")
 
         library_df = pd.DataFrame(library, columns = ['White', 'Black', 'Result', 'WElo', 'BElo',
-                                                        'ECO', 'Opening', 'Date', 'Time', 'id', 'fname'])
+                                                        'ECO', 'Opening', 'Date', 'TimeControl', 'id', 'fname'])
         return library_df
 
 
+    def loadin_games(self, limit=5000):
+        """ Loads all games into memory, unless above the limit. This increases
+        the object size by ~ 10MB/(1000 games). """
+        if len(self.df) <= limit:
+            self.df['Game'] = self.df.fname.apply(lambda fname: GameReader(fname))
+        else:
+            self.df['Game'] = None
+
     def winrates(self):
-        """ Winrates by color"""
+        """ Winrate by color. """
         white_df = self.df[self.df['White'] == self.username]
         black_df = self.df[self.df['Black'] == self.username]
         black_wr = len(black_df[black_df['Result']==0])/len(black_df)
         white_wr = len(white_df[white_df['Result']==1])/len(white_df)
         return white_wr, black_wr
+
+
+    def get_chcom_openings(self):
+        """Chess.com suggested opening, simplify this to get ~mainlines."""
+        self.df['opening_chesscom_spec'] = self.extract_openings_from_ecourl()
+        self.df['opening_chesscom_general'] = self.mainline_openings()
 
 
     def extract_openings_from_ecourl(self, color=None):
@@ -51,21 +66,21 @@ class GameLibrary:
     def opening_frequencies(self, color=None):
         """Aggregates opening names from ECOURL, by string similarity, 
         and sums their counts to get frequency of main lines."""
-        openings = self.extract_openings_from_ecourl(color)
-        return combine_like_openings(openings)
+        return combine_like_openings(self.df.opening_chesscom_spec)
+    
 
-
-    def openings_and_games(self, color = 'White'):
-        """Returns a list of specific openings and dataframe with rows (where color)."""
-        openings = self.extract_openings_from_ecourl(color=color)
-        return openings, self.df[self.df[color] == self.username]
+    def mainline_openings(self):
+        """Maps specific openings to mainlines, based on mainlines from opening_frequencies()."""
+        specific_openings = self.df.opening_chesscom_spec
+        mainlines = [x[0] for x in self.opening_frequencies()]
+        return [get_mainline(mainlines, opening) for opening in specific_openings]
 
 
     def results_by_openings(self, color = 'White'):
         """Returns a mapping between opening: (wins, losses, draws)."""
-        openings, games = self.openings_and_games(color)
-        # Top openings (white)
-        opening_freqs = self.opening_frequencies(color=color)
+        games = self.df[self.df[color] == self.username]
+        openings = games['opening_chesscom_spec']
+        opening_freqs = combine_like_openings(openings)
 
         # Get results for top openings
         opening_wrs = {}

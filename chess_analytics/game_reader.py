@@ -11,17 +11,22 @@ class GameReader:
     """Read games from pgn files."""
     def __init__(self, fgame):
         self.fgame = fgame
-        self.headers, self.game = self.read_game()
+        self.game, self.headers = self.read_game()
         self.pgn = self.parse_pgn()
         self.moves = self.parse_moves()
         self.result = self.get_result()
         self.date = self.infer_date()
         self.eco_code = self.headers['ECO'] if 'ECO' in self.headers else "NaO"
+        self.time_control = self.headers['TimeControl'] if 'TimeControl' in self.headers else "NT"
         self.df_eco = self.load_eco_table()
         self.df_nic = self.load_nic_table()
         self.opening = self.eco_to_nic_opening()
-        self.time_control = self.headers['TimeControl'] if 'TimeControl' in self.headers else "NT"
 
+    def __eq__(self, other):
+        """If two games have the same pgn (including headers), they're the same game."""
+        return str(self.game) == str(other.game)
+
+    
     @classmethod
     @lru_cache(maxsize=None)
     def load_eco_table(cls):
@@ -45,7 +50,7 @@ class GameReader:
         """Returns headers, python-chess' game object, and the PGN string. """
         with open(self.fgame) as pgn_file:
             game = chess.pgn.read_game(pgn_file)
-        return game.headers, game
+        return game, game.headers
 
 
     # Openings
@@ -79,7 +84,7 @@ class GameReader:
             return self.eco_to_opening() + "*"
     
     def clean_pgn(self):
-        """ Scrubs comments/side-lines and redundant move-numbers from PGN. """
+        """ Scrubs comments, side-lines and move-numbers from PGN. """
         clean_pgn = ""
         is_dirty = False
         for x in self.pgn:
@@ -109,14 +114,20 @@ class GameReader:
         del moves[::3] # Remove move numbers
         return moves # moves_white, moves_black = moves[0::2], moves[1::2]  
 
+    def play_nth_move(self, n=1):
+        """Play n plys using python-chess game object, return new board state. In Jupyter, this renders
+        an image of the board."""
+        board = self.game.board()
+        moves = list(self.game.mainline_moves())
+        for move in moves[:n]:
+            board.push(move)
+        return board
     
     def get_result(self):
         """Single-number representation of winner 1 => white, 0 => black, 0.5 => draw."""
         result = self.headers['Result'].split("-")[0]
-        if len(result) == 1:
-            return int(result)
-        else:
-            return float("0.5")
+        return int(result) if len(result) == 1 else float("0.5")
+
 
     def infer_date(self):
         if 'Date' in self.headers:
@@ -134,6 +145,7 @@ class GameReader:
             print("Summary:")
             print(self.summarize())
     
+
     def summarize(self):
         result_map = {0: "Black", 1: "White", 0.5: "Draw"}
         result = result_map[self.get_result()]

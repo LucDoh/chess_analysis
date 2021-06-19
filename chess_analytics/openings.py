@@ -38,6 +38,11 @@ def combine_like_openings(openings):
     openings = sorted(openings.items(), key=lambda x: -x[1])
     return openings
 
+def get_mainline(mainlines, opening):
+    for mainline in mainlines:
+        if mainline in opening:
+            return mainline
+    return 'NAO'
 
 
 def process_opening(x):
