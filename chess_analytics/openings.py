@@ -32,9 +32,10 @@ def combine_like_openings(openings):
     """Chop off the ends of openings and then combine them to get main-line counts."""
     openings = sorted([chop_opening_ending(op) for op in openings if op])
     openings = compress_openings(openings)
-    print(len(openings))
-    print(sum(openings.values()))
-
+    print(f"Number of main-lines played: {len(openings)}")
+    # Number of games for which an opening was found
+    # print(sum(openings.values()))
+    
     openings = sorted(openings.items(), key=lambda x: -x[1])
     return openings
 

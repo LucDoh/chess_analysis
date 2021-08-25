@@ -1,6 +1,7 @@
 import pandas as pd
 from .game_reader import GameReader
 from .openings import combine_like_openings, get_mainline
+from .tactics import find_forced_mate_positions
 from pathlib import Path
 
 
@@ -12,9 +13,11 @@ class GameLibrary:
         self.username = parent_dir.split('/')[-1]
         self.df = self.load_library(limit)
         self.get_chcom_openings()
+        self.load_games()
 
     def load_library(self, limit):
-        """From the parent_dir, loads pgns and their summaries into a dataframe."""
+        """From the parent_dir, loads pgns and their summaries into a dataframe.
+        TODO - Speed up, using multiprocessing."""
         library = [] 
 
         library_files = list(Path(self.parent_dir).rglob("*.[tT][xX][tT]"))
@@ -28,8 +31,10 @@ class GameLibrary:
                                                         'ECO', 'Opening', 'Date', 'TimeControl', 'id', 'fname'])
         return library_df
 
+    def __len__(self):
+        return len(self.df)
 
-    def loadin_games(self, limit=5000):
+    def load_games(self, limit=5000):
         """ Loads all games into memory, unless above the limit. This increases
         the object size by ~ 10MB/(1000 games). """
         if len(self.df) <= limit:
@@ -96,8 +101,23 @@ class GameLibrary:
                         
         return opening_wrs
 
+    def get_nth_game(self, n):
+        """Returns the nth game as a GameReader object."""
+        return GameReader(self.df.fname.iloc[n])
+
+    def rank_fen_positions(self):
+        """Returns a dictionary containing the most common positions reached by the player,
+        ranked by frequency, and split by color"""
+        pass
+
+    def find_mate_positions(self, mate_in=2, limit=100):
+        """Finds all forced mate positions across the library, and returns the FEN position,
+        description, and link to game (t ~= 5mins/1000 games scanned)."""
+        return find_forced_mate_positions(self, mate_in, limit)
 
     # TODO
+    # Rank most common positions after nth move (what are the correct continuations, mistakes user makes)
+    # Generate tactics automatically (Mate in 2, mate in 3, ...)
     # Longest common sequence of moves
     # Most common ways of losing (time, resignation, mate)
     # Cluster games by opening, or similarity
