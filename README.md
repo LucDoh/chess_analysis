@@ -41,7 +41,13 @@ Future features:
     <img src="data/figures/Winrate_by_opening_white.png" width="330"/>
 </p>
 
-6. **scripts/generate_tactics.py** - Automatically generate tactics from a library. Currently supports mate-in-Ns, producing a JSON and PNGs of the positions. See *data/output/tactics/*
+6. **scripts/generate_tactics.py** - Automatically generate tactics from a library.This currently supports mate-in-Ns, producing a JSON and PNGs of the positions. 10 examples are in *data/output/tactics/*.
+
+<p align="center">
+    <img src="data/output/tactics/KnightofCamelot_vs._Luc777_w_to_move.png" title="KnightofCamelot vs Luc777"width="300"/>
+</p>
+    <p align="center">White to move & mate in two</p>
+
 
 
 ### Sources
