@@ -54,6 +54,8 @@ def position_to_image(fen_position, output_name, filetype="png"):
         os.remove(fname_svg)
     
 
+# TODO - Render a board in iPython (create figure)
+
 
 
 

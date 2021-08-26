@@ -1,8 +1,8 @@
 # Better Your Chess
 ### What for?
-This project aims to give a high-level analysis of all the chess games you've played online, starting with a simple way to download an organized collection of all your games! 
+This project aims to help you learn from all the chess games you've played online, starting with a simple way to download an organized collection of your games! 
 
-On Chess.com, you can see your winrate by color, your best win, and analyze a game per day for free. Built on top of the Stockfish engine and python-chess, this package aims to go further with no work from the user by: showing you your winrate by opening, automatically generating tactics from your library, and showing you where you are deviating from book moves.
+On Chess.com, you can view your winrate by color, your best win, and analyze a game per day for free. Building on top of the Stockfish engine and python-chess, this package aims to give the user: winrates by opening, automatic tactic generation from your library, and common deviations from book moves.
 
 Current features:
 - winrate by opening 
@@ -25,7 +25,7 @@ Future features:
     python scripts/pgn_downloader.py username
     ```
 
-3. **chess_analytics/game_reader.py** - implements GameReader, a class to work with PGNs.
+3. **chess_analytics/game_reader.py** - implements a GameReader, class to work with PGNs.
 
 4. **chess_analytics/game_library.py** - build a library of games from a directory, represented as a dataframe with 1 row per game.
     ```
@@ -35,7 +35,7 @@ Future features:
     ```
     ![Sample of dataframe](data/figures/df_sampled.png)
 
-5. **scripts/plotting.py** - visualize a library: opponent rating distribution, winrate by opening, opening distribution.
+5. **scripts/plotting.py** - visualize a library: opponent rating distribution, winrate by opening, and more.
 <p align="center">
     <img src="data/figures/Rating_distribution.png" width="360"/>
     <img src="data/figures/Winrate_by_opening_white.png" width="330"/>

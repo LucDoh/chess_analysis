@@ -7,8 +7,7 @@ from chess_analytics.utils import position_to_image
 
 """ Tactics Generator: From a library of pgns, automatically find and
 generate tactics and output them as PNGs."""
-PNG_OUTPUT_DIR =  "data/output/tactics/"
-OUTPUT_DIR = "data/output/"
+OUTPUT_DIR = "data/output/tactics/"
 
 
 def tactics_to_json(tactics_data, output_name):
@@ -19,7 +18,7 @@ def tactics_to_json(tactics_data, output_name):
 def generate_tactics_pngs(tactics_data, output_dir):
     for tactic_data in tactics_data:
         image_name = "_".join(tactic_data[1].split()[:3]) + "_" + tactic_data[0].split()[1] + "_to_move"
-        image_name = f"{output_dir}tactics/" + image_name
+        image_name = f"{output_dir}" + image_name
         position_to_image(tactic_data[0], image_name, filetype="png")
 
 def main():
