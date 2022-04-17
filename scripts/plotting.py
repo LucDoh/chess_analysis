@@ -23,6 +23,7 @@ def plot_results_by_opening(library, color='White', num = 8):
     ax.invert_yaxis()
     ax.legend(fontsize="13")
     ax.set_xlabel("Number of games played")
+    plt.show()
 
 
 

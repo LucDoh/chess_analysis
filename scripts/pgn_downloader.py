@@ -5,26 +5,26 @@ from pathlib import Path
 
 
 class GameDownloader:
-    """ Download all games played on a chess.com for a user.
-    References: 
+    """ Download all games played on a chess.com for a user. See: 
     - chess.com/news/view/published-data-api#pubapi-endpoint-games-pgn
     - chess.com/forum/view/suggestions/export-all-my-games-to-my-personal-database
     """
     def __init__(self, username):
         self.username = username
-        self.dates = []
+        self.dates =  self.get_dates()
         self.games = []
+        
     
     def get_dates(self):
-        """Find all month/year combos that the user played on
-        api.chess.com/pub/player/{username}/games/archives
-        Returns JSON of { "archives": [".../{user}/games/2009/10", ...] }"""
+        """Find all month/year combos that the user played through a request to
+        api.chess.com/pub/player/{username}/games/archives, which returns JSON:
+        { "archives": [".../{user}/games/2009/10", ...] }"""
         archive_url = f'https://api.chess.com/pub/player/{self.username}/games/archives'
         with urllib.request.urlopen(archive_url) as url:
             content = json.loads(url.read().decode())
-        self.dates = [c.split('/')[-2:] for c in content['archives']]
+        return [c.split('/')[-2:] for c in content['archives']]
     
-    def get_games(self, limit = None, specify_dates = None):
+    def download_games(self, limit = None, specify_dates = None):
         """By year/month: https://api.chess.com/pub/player/{user}/games/2009/10/pgn
         (games are separated by 3 blank lines)."""
         pgns = {}
@@ -47,7 +47,7 @@ class GameDownloader:
         print(f"Wrote to {fname}")
 
     def games_to_folder(self, foldername = None):
-        """Store games into a folder with subdirectories by year and month"""
+        """Store games in a directory with subdirectories by year and month."""
 
         foldername = foldername if foldername else self.username
         full_path = f"data/user_games/{foldername}"
@@ -70,8 +70,7 @@ def main():
     if len(sys.argv) > 1:
         username = sys.argv[1]
         game_downloader = GameDownloader(username)
-        game_downloader.get_dates()
-        game_downloader.get_games() 
+        game_downloader.download_games() 
         game_downloader.games_to_folder()
 
     else:
